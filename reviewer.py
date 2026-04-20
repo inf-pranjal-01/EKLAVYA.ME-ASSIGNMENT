@@ -2,6 +2,8 @@ import json
 import os
 import requests
 
+from dotenv import load_dotenv
+load_dotenv()
 
 def review(content:dict,grade: int) -> dict:
     system_prompt = (

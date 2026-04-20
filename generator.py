@@ -7,14 +7,17 @@ import os
 
 import requests
 
+from dotenv import load_dotenv
+load_dotenv()
 
 def generate( input_data : dict, feedback : list = None, prev_response : dict = None) -> dict:
     
     grade= input_data["grade"]
     topic = input_data["topic"]
 
+    feedback_str = ""
 
-    if feedback:
+    if feedback is not None and len(feedback) > 0:
          header = "\n\nPrevious review flagged these issues — fix them:\n"
          bullets = "\n".join(f"- {f}" for f in feedback)
          feedback_str = header + bullets
@@ -57,11 +60,11 @@ Include 2 MCQs. The answer field should be just the letter (A/B/C/D)."""
     "messages": [
       {
         "role": "user",
-        "content": {user_prompt}
+        "content": user_prompt
       },
 
       {"role": "system",
-       "content" : {system_prompt}
+       "content" : system_prompt
       },
     ],
             "temperature": 0.7,
@@ -71,13 +74,7 @@ Include 2 MCQs. The answer field should be just the letter (A/B/C/D)."""
     )
 
 
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        return {
-        "error": "API request failed",
-        "details": str(e)
-    }
+
 
     raw = response.json()["choices"][0]["message"]["content"].strip()
     raw = raw.replace("```json", "").replace("```", "").strip()

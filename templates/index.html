@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eklavya — Content Generator</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Georgia', serif;
+      background: #f4f1ec;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding: 48px 20px;
+    }
+
+    .page {
+      max-width: 680px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    header {
+      border-bottom: 2px solid #1a1a1a;
+      padding-bottom: 16px;
+      margin-bottom: 36px;
+    }
+    header h1 {
+      font-size: 22px;
+      font-weight: normal;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    header p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 4px;
+      font-family: monospace;
+    }
+
+    /* ── Form ── */
+    .form-block {
+      background: #fff;
+      border: 1px solid #d0ccc4;
+      padding: 28px;
+      margin-bottom: 28px;
+    }
+    .form-block h2 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: #888;
+      margin-bottom: 20px;
+      font-family: monospace;
+    }
+    .field {
+      margin-bottom: 18px;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #555;
+      margin-bottom: 6px;
+      font-family: monospace;
+    }
+    .field select,
+    .field input[type="text"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #bbb;
+      background: #faf9f7;
+      font-size: 15px;
+      font-family: 'Georgia', serif;
+      color: #1a1a1a;
+      outline: none;
+      transition: border-color 0.15s;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+    .field select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+    }
+    .field select:focus,
+    .field input[type="text"]:focus {
+      border-color: #1a1a1a;
+      background: #fff;
+    }
+
+    button#btn {
+      width: 100%;
+      padding: 12px;
+      background: #1a1a1a;
+      color: #f4f1ec;
+      border: none;
+      font-size: 13px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: monospace;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    button#btn:hover:not(:disabled) { background: #333; }
+    button#btn:disabled { background: #999; cursor: not-allowed; }
+
+    /* ── Status bar ── */
+    #status-bar {
+      display: none;
+      font-family: monospace;
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 20px;
+      padding: 10px 14px;
+      border-left: 3px solid #bbb;
+      background: #fff;
+    }
+    #status-bar.active { display: block; }
+    .dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      background: #999;
+      margin-right: 8px;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── Output cards ── */
+    .section-label {
+      font-family: monospace;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #888;
+      margin-bottom: 8px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #d0ccc4;
+      margin-bottom: 16px;
+    }
+    .card-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid #e8e4de;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header h3 {
+      font-size: 13px;
+      font-family: monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: normal;
+    }
+    .card-body { padding: 20px; }
+
+    /* Status badges */
+    .status-tag {
+      font-family: monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    .tag-pass { background: #d4edda; color: #1a5c2a; border: 1px solid #aad4b5; }
+    .tag-fail { background: #f8d7da; color: #7b1c24; border: 1px solid #f0aab0; }
+    .tag-refined { background: #fff3cd; color: #7a4f00; border: 1px solid #ffe085; }
+    .tag-step { background: #e8e4de; color: #555; border: 1px solid #ccc; }
+
+    /* Explanation */
+    .explanation {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #2a2a2a;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid #eee;
+    }
+
+    /* MCQs */
+    .mcq-list { display: flex; flex-direction: column; gap: 14px; }
+    .mcq-item {
+      padding: 14px 16px;
+      background: #faf9f7;
+      border: 1px solid #e5e1da;
+    }
+    .mcq-q {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 10px;
+      color: #1a1a1a;
+    }
+    .mcq-options {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 13px;
+      color: #444;
+      margin-bottom: 10px;
+    }
+    .mcq-answer {
+      font-family: monospace;
+      font-size: 12px;
+      color: #1a5c2a;
+      background: #d4edda;
+      display: inline-block;
+      padding: 2px 8px;
+    }
+
+    /* Feedback list */
+    .feedback-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .feedback-list li {
+      font-size: 13px;
+      line-height: 1.5;
+      padding: 10px 14px;
+      background: #fff9f9;
+      border-left: 3px solid #f0aab0;
+      color: #444;
+    }
+    .feedback-list li::before {
+      content: '→ ';
+      color: #c0392b;
+      font-family: monospace;
+    }
+    .no-issues {
+      font-family: monospace;
+      font-size: 13px;
+      color: #1a5c2a;
+    }
+
+    /* Error */
+    .error-card {
+      background: #fff;
+      border: 1px solid #f0aab0;
+      padding: 20px;
+      font-family: monospace;
+      font-size: 13px;
+      color: #7b1c24;
+    }
+    .error-card span { display: block; margin-bottom: 4px; color: #999; font-size: 11px; }
+  </style>
+</head>
+<body>
+  <div class="page">
+
+    <header>
+      <h1>Eklavya — Content Generator</h1>
+      <p>Agent pipeline: generate → review → refine</p>
+    </header>
+
+    <!-- Input Form -->
+    <div class="form-block">
+      <h2>Input</h2>
+
+      <div class="field">
+        <label for="grade">Grade level</label>
+        <select id="grade">
+          <option value="">— Select grade —</option>
+          <option value="1">Grade 1</option>
+          <option value="2">Grade 2</option>
+          <option value="3">Grade 3</option>
+          <option value="4">Grade 4</option>
+          <option value="5">Grade 5</option>
+          <option value="6">Grade 6</option>
+          <option value="7">Grade 7</option>
+          <option value="8">Grade 8</option>
+          <option value="9">Grade 9</option>
+          <option value="10">Grade 10</option>
+          <option value="11">Grade 11</option>
+          <option value="12">Grade 12</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="topic">Topic</label>
+        <input id="topic" type="text" placeholder="e.g. Types of angles, Photosynthesis…">
+      </div>
+
+      <button id="btn" onclick="run()">Run Pipeline</button>
+    </div>
+
+    <!-- Live Status -->
+    <div id="status-bar">
+      <span class="dot"></span>
+      <span id="status-text">Starting…</span>
+    </div>
+
+    <!-- Output -->
+    <div id="output"></div>
+
+  </div>
+
+  <script>
+    const statusBar = document.getElementById('status-bar');
+    const statusText = document.getElementById('status-text');
+
+    function setStatus(msg) {
+      statusBar.classList.add('active');
+      statusText.textContent = msg;
+    }
+    function clearStatus() {
+      statusBar.classList.remove('active');
+    }
+
+    async function run() {
+      const grade = parseInt(document.getElementById('grade').value);
+      const topic = document.getElementById('topic').value.trim();
+
+      if (!grade || !topic) {
+        alert('Please select a grade and enter a topic.');
+        return;
+      }
+
+      document.getElementById('btn').disabled = true;
+      document.getElementById('output').innerHTML = '';
+      setStatus('Step 1/3 — Generator running…');
+
+      try {
+        const res = await fetch('/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ grade, topic })
+        });
+
+        setStatus('Step 2/3 — Reviewer evaluating…');
+        const data = await res.json();
+
+        if (!res.ok) throw new Error(data.detail || 'Server error');
+
+        if (data.refined) setStatus('Step 3/3 — Refinement done.');
+        else clearStatus();
+
+        render(data);
+      } catch (e) {
+        clearStatus();
+        document.getElementById('output').innerHTML = `
+          <div class="error-card">
+            <span>Error</span>
+            ${e.message}
+          </div>`;
+      } finally {
+        document.getElementById('btn').disabled = false;
+        clearStatus();
+      }
+    }
+
+    function renderContentCard(title, content, tag) {
+      const mcqs = content.mcqs.map((q, i) => `
+        <div class="mcq-item">
+          <div class="mcq-q">Q${i + 1}. ${q.question}</div>
+          <div class="mcq-options">${q.options.map(o => `<div>${o}</div>`).join('')}</div>
+          <span class="mcq-answer">Answer: ${q.answer}</span>
+        </div>`).join('');
+
+      return `
+        <div class="card">
+          <div class="card-header">
+            <h3>${title}</h3>
+            ${tag ? `<span class="status-tag ${tag.cls}">${tag.label}</span>` : ''}
+          </div>
+          <div class="card-body">
+            <div class="explanation">${content.explanation}</div>
+            <div class="section-label">Multiple choice questions</div>
+            <div class="mcq-list">${mcqs}</div>
+          </div>
+        </div>`;
+    }
+
+    function render(data) {
+      let html = '';
+
+      // Step 1: Generated output
+      if (data.generated) {
+        html += `<div class="section-label">Step 1 — Generator output</div>`;
+        html += renderContentCard('Draft content', data.generated, { cls: 'tag-step', label: 'Generated' });
+      }
+
+      // Step 2: Reviewer feedback
+      if (data.review) {
+        const isPass = data.review.status === 'pass';
+        const feedbackHtml = data.review.feedback.length
+          ? `<ul class="feedback-list">${data.review.feedback.map(f => `<li>${f}</li>`).join('')}</ul>`
+          : `<p class="no-issues">✓ No issues found.</p>`;
+
+        html += `<div class="section-label">Step 2 — Reviewer feedback</div>
+        <div class="card">
+          <div class="card-header">
+            <h3>Review result</h3>
+            <span class="status-tag ${isPass ? 'tag-pass' : 'tag-fail'}">${isPass ? 'Pass' : 'Fail'}</span>
+          </div>
+          <div class="card-body">${feedbackHtml}</div>
+        </div>`;
+      }
+
+      // Step 3: Refined output (only if review failed)
+      if (data.refined) {
+        html += `<div class="section-label">Step 3 — Refined output</div>`;
+        html += renderContentCard('Refined content', data.refined, { cls: 'tag-refined', label: 'Refined' });
+      }
+
+      document.getElementById('output').innerHTML = html;
+    }
+  </script>
+</body>
+</html>

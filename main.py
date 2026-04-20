@@ -1,68 +1,77 @@
-import json
-import os
-import requests
 from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
-from dotenv import load_dotenv
-
+import os
+ 
 from generator import generate
 from reviewer import review
-
-load_dotenv()
-
-app = FastAPI(title="Eklavya.ME Content Pipeline")
+ 
 
 
-class ContentRequest(BaseModel):
-    grade: int
-    topic: str
+app = FastAPI()
+
+
+
+
+
+class PipelineRequest(BaseModel):
+    grade:int
+    topic:str
+
+
+
+
+@app.get("/", response_class=HTMLResponse)
+def index():
+    return FileResponse("templates/index.html")
+
 
 
 @app.post("/generate")
-async def generate_content(req: ContentRequest):
-    result = {
-        "grade": req.grade,
-        "topic": req.topic,
-        "generated": None,
-        "review": None,
-        "refined": None,
-        "error": None,
-    }
+def run_pipeline(body:PipelineRequest):
+
+    if not body.topic.strip():
+        raise HTTPException(status_code=400,detail="Topic cannot be empty.")
+
+    input_data = {"grade": body.grade, "topic": body.topic.strip()}
 
     try:
-        # Step 1: Generate
-        generated = generate({"grade": req.grade, "topic": req.topic})
-        result["generated"] = generated
-
-        # Step 2: Review
-        review_result = review(generated, req.grade)
-        result["review"] = review_result
-
-        # Step 3: Refine once if review failed
-        if review_result["status"] == "fail":
-            refined = generate(
-                {"grade": req.grade, "topic": req.topic},
-                feedback=review_result["feedback"]
-            )
-            result["refined"] = refined
-
-    except requests.exceptions.Timeout:
-        result["error"] = "Request timed out. Please try again."
-        raise HTTPException(status_code=504, detail=result["error"])
-    except requests.exceptions.HTTPError as e:
-        result["error"] = f"API error: {e.response.status_code}"
-        raise HTTPException(status_code=502, detail=result["error"])
-    except json.JSONDecodeError:
-        result["error"] = "Model returned invalid JSON. Please retry."
-        raise HTTPException(status_code=422, detail=result["error"])
+        generated = generate(input_data)
     except Exception as e:
-        result["error"] = str(e)
-        raise HTTPException(status_code=500, detail=result["error"])
-
-    return result
+        raise HTTPException(status_code=500, detail=f"Generator failed: {e}")
 
 
-@app.get("/")
-async def ui():
-    return FileResponse("templates/index.html")
+    try:
+        review_result = review(generated, body.grade)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Reviewer failed: {e}")
+
+    payload = {
+        "generated": generated,
+        "review":    review_result,
+        "refined":    None,
+    }
+
+
+    if review_result.get("status") == "fail" and review_result.get("feedback"):
+        try:
+            refined = generate(
+                input_data,
+                feedback=review_result["feedback"],
+                prev_response=generated,
+            )
+           
+            payload["refined"] = refined
+
+        except Exception as e:
+
+            payload["refinement_error"] = str(e)
+
+    return payload
+
+
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=int(os.environ.get("PORT", 8000)), reload=True)
