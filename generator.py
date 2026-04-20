@@ -54,9 +54,10 @@ Include 2 MCQs. The answer field should be just the letter (A/B/C/D)."""
     url="https://openrouter.ai/api/v1/chat/completions",
     headers={
     "Authorization": "Bearer " + os.getenv("MISC_API_KEY"),  
+    "Content-Type": "application/json"
     },
     json = {
-    "model": "openai/gpt-5.2",
+    "model": "openai/gpt-4o-mini",
     "messages": [
       {
         "role": "user",
@@ -73,6 +74,11 @@ Include 2 MCQs. The answer field should be just the letter (A/B/C/D)."""
         timeout=30,
     )
 
+    response.raise_for_status()
+    resp_json = response.json()
+ 
+    if "choices" not in resp_json:
+        raise ValueError(f"OpenRouter API error: {resp_json.get('error', resp_json)}")
 
 
 

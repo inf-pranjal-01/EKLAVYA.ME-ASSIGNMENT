@@ -49,7 +49,7 @@ eklavya/
 ├── generator.py         # Generator agent
 ├── reviewer.py          # Reviewer agent
 ├── templates/
-│   └── index.html       # UI
+│   └── index.html       # UI (designed with AI assistance)
 ├── .env                 # API key (not committed)
 └── .gitignore
 ```
@@ -94,4 +94,5 @@ Uses `openai/gpt-4o-mini` via OpenRouter. To swap models, change the `"model"` f
 
 - Refinement is limited to one pass by design.
 - Both agents save their last output to `generator_output.json` and `reviewer_output.json` respectively — useful for debugging.
+- The frontend (`index.html`) was designed with the help of an AI assistant (Claude) and then adapted to fit the pipeline's output structure.
 - No database. No auth. This is a local/demo tool.

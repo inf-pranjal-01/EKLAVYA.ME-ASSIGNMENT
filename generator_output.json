@@ -1,0 +1,25 @@
+{
+  "explanation": "Types of angles can be understood as different ways to measure how two lines meet at a point. The three main types of angles are: acute angles, which are less than 90 degrees; right angles, which are exactly 90 degrees; and obtuse angles, which are more than 90 degrees but less than 180 degrees.",
+  "mcqs": [
+    {
+      "question": "What type of angle is less than 90 degrees?",
+      "options": [
+        "A) Acute angle",
+        "B) Right angle",
+        "C) Obtuse angle",
+        "D) Straight angle"
+      ],
+      "answer": "A"
+    },
+    {
+      "question": "What type of angle is exactly 90 degrees?",
+      "options": [
+        "A) Acute angle",
+        "B) Right angle",
+        "C) Obtuse angle",
+        "D) Reflex angle"
+      ],
+      "answer": "B"
+    }
+  ]
+}
