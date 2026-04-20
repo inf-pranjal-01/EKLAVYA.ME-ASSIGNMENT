@@ -1,4 +1,4 @@
-# Eklavya Content Generator
+# Eklavya Content Generator (ASSIGNMENT)
 
 An agent-based pipeline that generates grade-appropriate educational content, reviews it, and refines it if needed. Built with FastAPI and OpenRouter.
 
