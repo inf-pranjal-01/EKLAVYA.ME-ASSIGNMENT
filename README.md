@@ -20,7 +20,6 @@ All three steps are visible in the UI.
 
 ```bash
 git clone <repo-url>
-cd eklavya
 pip install fastapi uvicorn python-dotenv requests
 ```
 
